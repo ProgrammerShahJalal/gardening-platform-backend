@@ -1,26 +1,42 @@
 import { Router } from 'express';
-import { UserController } from './user.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import auth from '../../middlewares/auth';
-import { createUserSchema, loginUserSchema } from './user.validation';
+import {
+  userSignUpValidationSchema,
+  userLoginValidationSchema,
+  userRecoverPasswordValidationSchema,
+  userResetPasswordValidationSchema,
+} from './user.validation';
+import { UserControllers } from './user.controller';
 
 const router = Router();
 
 // User registration route
 router.post(
   '/register',
-  validateRequest(createUserSchema),
-  UserController.createUser,
+  validateRequest(userSignUpValidationSchema),
+  UserControllers.signUp,
 );
 
 // User login route
 router.post(
   '/login',
-  validateRequest(loginUserSchema),
-  UserController.loginUser,
+  validateRequest(userLoginValidationSchema),
+  UserControllers.login,
 );
 
-// Get user profile (Protected route)
-router.get('/profile', auth('user', 'admin'), UserController.getUserProfile);
+// Password recovery route
+router.post(
+  '/recover-password',
+  validateRequest(userRecoverPasswordValidationSchema),
+  UserControllers.recoverPassword,
+);
+
+// Password reset route
+router.post(
+  '/reset-password',
+  validateRequest(userResetPasswordValidationSchema),
+  UserControllers.resetPassword,
+);
 
 export const UserRoutes = router;
