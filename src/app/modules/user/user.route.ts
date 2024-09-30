@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import validateRequest from '../../middlewares/validateRequest';
-import auth from '../../middlewares/auth';
+import { UserControllers } from './user.controller';
 import {
   userSignUpValidationSchema,
   userLoginValidationSchema,
   userRecoverPasswordValidationSchema,
-  userResetPasswordValidationSchema,
+  userChangePasswordValidationSchema,
 } from './user.validation';
-import { UserControllers } from './user.controller';
 
 const router = Router();
 
@@ -25,17 +24,17 @@ router.post(
   UserControllers.login,
 );
 
-// Password recovery route
+// Password recovery route (security questions)
 router.post(
   '/recover-password',
   validateRequest(userRecoverPasswordValidationSchema),
   UserControllers.recoverPassword,
 );
 
-// Password reset route
+// Password change route (old password verification)
 router.post(
-  '/reset-password',
-  validateRequest(userResetPasswordValidationSchema),
+  '/change-password',
+  validateRequest(userChangePasswordValidationSchema),
   UserControllers.resetPassword,
 );
 

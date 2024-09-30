@@ -4,6 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import catchAsync from '../../utils/catchAsync';
 import httpStatus from 'http-status';
 
+// User signup (with security questions)
 const signUp = catchAsync(async (req: Request, res: Response) => {
   const userData = req.body;
   const newUser = await UserServices.createUser(userData);
@@ -16,6 +17,7 @@ const signUp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// User login
 const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const result = await UserServices.loginUser(email, password);
@@ -29,29 +31,29 @@ const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Password recovery
+// Password recovery (through security questions)
 const recoverPassword = catchAsync(async (req: Request, res: Response) => {
-  const { email } = req.body;
-  await UserServices.recoverPassword(email);
+  const { email, answer1, answer2 } = req.body; // Include the answers to security questions
+  const result = await UserServices.recoverPassword(email, answer1, answer2);
+
   sendResponse(res, {
-    statusCode: httpStatus.OK,
     success: true,
-    message: 'Password recovery instructions sent to your email',
-    data: {},
+    statusCode: httpStatus.OK,
+    message: 'Security questions verified, you can now reset the password',
+    data: result,
   });
 });
 
-//password change
+// Password change (with old password verification)
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const { token, newPassword } = req.body;
-
-  const result = await UserServices.resetPassword(token, newPassword);
+  const { email, oldPassword, newPassword } = req.body;
+  await UserServices.changePassword(email, oldPassword, newPassword);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Password reset successful',
-    data: result,
+    message: 'Password changed successfully',
+    data: {},
   });
 });
 

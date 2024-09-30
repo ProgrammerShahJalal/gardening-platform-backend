@@ -6,6 +6,7 @@ export const userSignUpValidationSchema = z.object({
   password: z.string().min(6).max(20),
   phone: z.string().min(10).max(15),
   address: z.string().min(5).max(100),
+  securityAnswers: z.array(z.string().min(2).max(100)).length(2), // Require 2 answers
   role: z.enum(['user', 'admin']),
 });
 
@@ -16,11 +17,14 @@ export const userLoginValidationSchema = z.object({
 
 // Password recovery validation schema
 export const userRecoverPasswordValidationSchema = z.object({
-  email: z.string().email(), // Email must be a valid email
+  email: z.string().email(),
+  answer1: z.string().min(2),
+  answer2: z.string().min(2),
 });
 
-// Password reset validation schema
-export const userResetPasswordValidationSchema = z.object({
-  token: z.string(), // Token from the recovery email
+// Password change validation schema
+export const userChangePasswordValidationSchema = z.object({
+  email: z.string().email(),
+  oldPassword: z.string().min(6),
   newPassword: z.string().min(6).max(20),
 });

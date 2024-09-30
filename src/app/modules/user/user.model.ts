@@ -16,15 +16,24 @@ const userSchema = new Schema<TUser, UserModel>(
       enum: Object.values(USER_ROLE),
       default: USER_ROLE.user,
     },
+    securityAnswers: { type: [String], required: true, select: false },
   },
   { timestamps: true },
 );
 
 userSchema.pre('save', async function (next) {
-  this.password = await bcrypt.hash(
-    this.password,
-    Number(config.bcrypt_salt_rounds),
-  );
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(
+      this.password,
+      Number(config.bcrypt_salt_rounds),
+    );
+  }
+
+  if (this.isModified('securityAnswers')) {
+    this.securityAnswers = await Promise.all(
+      this.securityAnswers.map((answer) => bcrypt.hash(answer, 10)),
+    );
+  }
   next();
 });
 

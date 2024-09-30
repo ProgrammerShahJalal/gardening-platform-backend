@@ -1,20 +1,21 @@
-import { Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import { USER_ROLE } from './user.constant';
 
 export interface TUser {
-  _id?: string;
   name: string;
   email: string;
   password: string;
   phone: string;
   address: string;
   role: keyof typeof USER_ROLE;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
+  securityAnswers: string[];
 }
 
-export interface UserModel extends Model<TUser> {
-  isUserExistsByEmail(email: string): Promise<TUser | null>;
+// Extend Document to include Mongoose instance methods
+export interface TUserDocument extends TUser, Document {}
+
+export interface UserModel extends Model<TUserDocument> {
+  isUserExistsByEmail(email: string): Promise<TUserDocument | null>;
   isPasswordMatched(
     plainTextPassword: string,
     hashedPassword: string,

@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from './user.model';
@@ -6,17 +5,27 @@ import { TUser } from './user.interface';
 import AppError from '../../errors/AppError';
 import config from '../../config';
 import httpStatus from 'http-status';
-import sendEmail from '../../utils/sendEmail';
 
+// User creation with security questions
 const createUser = async (userData: TUser) => {
   const existingUser = await User.findOne({ email: userData.email });
   if (existingUser)
     throw new AppError(httpStatus.CONFLICT, 'Email already exists');
 
+  // Ensure security questions are provided
+  if (!userData.securityAnswers || userData.securityAnswers.length < 2) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Please provide two security answers',
+    );
+  }
+
+  // Save the user
   const newUser = await User.create(userData);
   return newUser;
 };
 
+//login user
 const loginUser = async (email: string, password: string) => {
   const user = await User.isUserExistsByEmail(email);
   if (!user || !(await User.isPasswordMatched(password, user.password))) {
@@ -34,79 +43,54 @@ const loginUser = async (email: string, password: string) => {
   return { user, token };
 };
 
-// Password recovery
-const recoverPassword = async (email: string) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-  }
+// Password recovery with security questions
+const recoverPassword = async (
+  email: string,
+  answer1: string,
+  answer2: string,
+) => {
+  const user = await User.findOne({ email }).select('+securityAnswers');
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
 
-  // Generate a password reset token
-  const resetToken = crypto.randomBytes(32).toString('hex');
+  // Check if security answers match
+  const isAnswer1Matched = await bcrypt.compare(
+    answer1,
+    user.securityAnswers[0],
+  );
+  const isAnswer2Matched = await bcrypt.compare(
+    answer2,
+    user.securityAnswers[1],
+  );
 
-  // Hash the token and set an expiration date (e.g., 1 hour)
-  const resetPasswordToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-  const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour expiration as Date
-
-  // Save token and expiration date to user's record
-  user.resetPasswordToken = resetPasswordToken;
-  user.resetPasswordExpires = resetPasswordExpires;
-  await user.save({ validateBeforeSave: false }); // Save the user without validating other fields
-
-  // Construct the password reset URL
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-  // Email content
-  const message = `
-    You requested to reset your password. Please click the link below to complete the process:
-    ${resetUrl}
-    If you did not request this, please ignore this email.
-  `;
-
-  // Send the recovery email
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Password Recovery',
-      message,
-    });
-  } catch (error) {
-    // If email sending fails, reset token and expiration
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save({ validateBeforeSave: false });
-
+  if (!isAnswer1Matched || !isAnswer2Matched) {
     throw new AppError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      'Error sending email. Please try again later.',
+      httpStatus.UNAUTHORIZED,
+      'Security answers are incorrect',
     );
   }
+
+  // If successful, allow password reset
+  return { message: 'Security questions verified, proceed to reset password' };
 };
 
-const resetPassword = async (token: string, newPassword: string) => {
-  // Hash token and check if it's still valid
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+// Password change (with old password verification)
+const changePassword = async (
+  email: string,
+  oldPassword: string,
+  newPassword: string,
+) => {
+  // Explicitly select the password field
+  const user = await User.findOne({ email }).select('+password');
 
-  const user = await User.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    throw new AppError(httpStatus.UNAUTHORIZED, 'Token is invalid or expired');
+  // Check if the user exists and if the old password matches
+  if (!user || !(await User.isPasswordMatched(oldPassword, user.password))) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Old password is incorrect');
   }
 
-  // Set the new password
-  user.password = await bcrypt.hash(
-    newPassword,
-    Number(config.bcrypt_salt_rounds),
-  );
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
+  // Update password
+  user.password = newPassword; // Assign the new password (pre-save hook will hash it)
 
+  // Save the updated user (pre('save') will handle hashing)
   await user.save();
 
   return user;
@@ -115,6 +99,6 @@ const resetPassword = async (token: string, newPassword: string) => {
 export const UserServices = {
   createUser,
   loginUser,
-  resetPassword,
   recoverPassword,
+  changePassword,
 };
