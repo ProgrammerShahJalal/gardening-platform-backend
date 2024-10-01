@@ -4,6 +4,7 @@ import router from './app/routes';
 import bodyParser from 'body-parser';
 import globalErrorHandler from './app/middlewares/globalErrorhandler';
 import notFound from './app/middlewares/notFound';
+import { WebhookController } from './app/modules/payment/webhook.controller';
 
 const app: Application = express();
 
@@ -18,6 +19,13 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   }),
+);
+
+// Stripe requires the raw body to construct events properly
+app.post(
+  '/api/webhook',
+  bodyParser.raw({ type: 'application/json' }),
+  WebhookController.stripeWebhook,
 );
 
 // Body parser for JSON
