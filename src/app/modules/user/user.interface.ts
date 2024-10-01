@@ -12,6 +12,7 @@ export interface TUser {
   profilePicture: string;
   followers: string[];
   following: string[];
+  favourites: string[];
   isVerified: boolean;
 }
 

@@ -4,6 +4,7 @@ import { TComment, TPost } from './post.interface';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { SortOrder } from 'mongoose';
+import { User } from '../user/user.model';
 
 // Create a new post
 const createPost = async (postData: TPost) => {
@@ -287,6 +288,74 @@ const addReplyToComment = async (
   return populatedPost;
 };
 
+// Add a post to favourites
+const addFavouritePost = async (userId: string, postId: string) => {
+  const user = await User.findById(userId);
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  if (user?.favourites.includes(postId)) {
+    throw new AppError(httpStatus.CONFLICT, 'Post already in favourites');
+  }
+
+  user?.favourites.push(postId);
+  await user?.save();
+
+  return post;
+};
+
+// Remove a post from favourites
+const removeFavouritePost = async (userId: string, postId: string) => {
+  const user = await User.findById(userId);
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  if (!user?.favourites.includes(postId)) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not in favourites');
+  }
+
+  user.favourites = user.favourites.filter(
+    (favPostId) => favPostId.toString() !== postId,
+  );
+  await user.save();
+
+  return post;
+};
+
+// get favourites posts
+const getFavouritePosts = async (userId: string) => {
+  // Ensure userId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid user ID');
+  }
+
+  const user = await User.findById(userId).populate({
+    path: 'favourites',
+    model: 'Post', // Ensure it references the correct Post model
+  });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Check if each favourite is a valid ObjectId
+  if (
+    !user.favourites.every((favourite: any) =>
+      mongoose.Types.ObjectId.isValid(favourite._id),
+    )
+  ) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid Post ID in favourites');
+  }
+
+  return user.favourites;
+};
+
 export const PostServices = {
   createPost,
   updatePost,
@@ -299,4 +368,7 @@ export const PostServices = {
   editComment,
   deleteComment,
   addReplyToComment,
+  addFavouritePost,
+  removeFavouritePost,
+  getFavouritePosts,
 };

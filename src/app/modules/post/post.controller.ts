@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
@@ -217,6 +218,71 @@ const addReplyToComment = async (
   }
 };
 
+// Add post to favourites
+const addFavouritePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const post = await PostServices.addFavouritePost(
+      req.user.id,
+      req.params.postId,
+    );
+    res.status(httpStatus.OK).json({
+      status: true,
+      statusCode: httpStatus.OK,
+      message: 'Post added to favourites successfully',
+      data: post,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Remove post from favourites
+const removeFavouritePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const post = await PostServices.removeFavouritePost(
+      req.user.id,
+      req.params.postId,
+    );
+    res.status(httpStatus.OK).json({
+      status: true,
+      statusCode: httpStatus.OK,
+      message: 'Post removed from favourites successfully',
+      data: post,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getFavouritePosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // Debugging the user ID
+    console.log('req.user.id:', req.user.id);
+
+    const favourites = await PostServices.getFavouritePosts(req.user.id);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Favourite posts retrieved successfully',
+      data: favourites,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const PostControllers = {
   createPost,
   editPost,
@@ -229,4 +295,7 @@ export const PostControllers = {
   editComment,
   deleteComment,
   addReplyToComment,
+  addFavouritePost,
+  removeFavouritePost,
+  getFavouritePosts,
 };

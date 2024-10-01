@@ -24,6 +24,12 @@ const userSchema = new Schema<TUser, UserModel>(
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }], // List of users being followed
     isVerified: { type: Boolean, default: false }, // Verification status
     securityAnswers: { type: [String], required: true, select: false },
+    favourites: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Post',
+      },
+    ],
   },
   { timestamps: true },
 );

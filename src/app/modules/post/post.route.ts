@@ -28,17 +28,17 @@ router.delete(
   PostControllers.deletePost,
 );
 
-// Get all posts (no auth required)
-router.get('/', PostControllers.getAllPosts);
-
 // Get a single post
 router.get('/:id', PostControllers.getPostById);
 
+// Get all posts (no auth required)
+router.get('/', PostControllers.getAllPosts);
+
 // Upvote a post
-router.post('/upvote/:id', isAuthenticated(), PostControllers.upvotePost);
+router.post('/:id/upvote', isAuthenticated(), PostControllers.upvotePost);
 
 // Downvote a post
-router.post('/downvote/:id', isAuthenticated(), PostControllers.downvotePost);
+router.post('/:id/downvote', isAuthenticated(), PostControllers.downvotePost);
 
 // Add a comment to a post
 router.post('/:postId/comments', isAuthenticated(), PostControllers.addComment);
@@ -62,6 +62,27 @@ router.post(
   '/:postId/comments/:commentId/replies',
   isAuthenticated(),
   PostControllers.addReplyToComment,
+);
+
+// Add a post to favourites
+router.post(
+  '/favourites/:postId',
+  isAuthenticated(),
+  PostControllers.addFavouritePost,
+);
+
+// Remove a post from favourites
+router.delete(
+  '/favourites/:postId',
+  isAuthenticated(),
+  PostControllers.removeFavouritePost,
+);
+
+// Get all favourite posts for the logged-in user
+router.get(
+  '/favourites/:userId',
+  isAuthenticated(),
+  PostControllers.getFavouritePosts,
 );
 
 export const PostRoutes = router;
