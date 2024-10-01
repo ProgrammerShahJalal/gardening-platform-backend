@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserRoutes } from '../modules/user/user.route';
+import { ProfileRoutes } from '../modules/profile/profile.route';
 
 const router = Router();
 
@@ -8,22 +9,10 @@ const moduleRoutes = [
     path: '/auth',
     route: UserRoutes,
   },
-  //   {
-  //     path: '/rooms',
-  //     route: RoomRoutes,
-  //   },
-  //   {
-  //     path: '/slots',
-  //     route: SlotRoutes,
-  //   },
-  //   {
-  //     path: '/',
-  //     route: bookingRouters,
-  //   },
-  //   {
-  //     path: '/',
-  //     route: PaymentRoutes,
-  //   },
+  {
+    path: '/profile',
+    route: ProfileRoutes,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

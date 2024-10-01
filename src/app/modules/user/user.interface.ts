@@ -9,6 +9,11 @@ export interface TUser {
   address: string;
   role: keyof typeof USER_ROLE;
   securityAnswers: string[];
+  profilePicture: string;
+  followers: string[];
+  following: string[];
+  isVerified: boolean;
+  upvotes: number;
 }
 
 // Extend Document to include Mongoose instance methods
