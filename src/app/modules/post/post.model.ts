@@ -15,6 +15,8 @@ const postSchema = new Schema<TPost, PostModel>(
     tags: { type: [String], default: [] },
     images: { type: [String], default: [] }, // Array of image URLs
     isPremium: { type: Boolean, default: false }, // Premium content flag
+    upvotes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Array of user IDs for upvotes
+    downvotes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Array of user IDs for downvotes
   },
   { timestamps: true },
 );

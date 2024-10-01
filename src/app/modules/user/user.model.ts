@@ -23,7 +23,6 @@ const userSchema = new Schema<TUser, UserModel>(
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }], // List of followers
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }], // List of users being followed
     isVerified: { type: Boolean, default: false }, // Verification status
-    upvotes: { type: Number, default: 0 }, // Track upvotes
     securityAnswers: { type: [String], required: true, select: false },
   },
   { timestamps: true },

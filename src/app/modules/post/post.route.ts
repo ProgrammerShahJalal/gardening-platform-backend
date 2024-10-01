@@ -34,4 +34,10 @@ router.get('/', PostControllers.getAllPosts);
 // Get a single post
 router.get('/:id', PostControllers.getPostById);
 
+// Upvote a post
+router.post('/upvote/:id', isAuthenticated(), PostControllers.upvotePost);
+
+// Downvote a post
+router.post('/downvote/:id', isAuthenticated(), PostControllers.downvotePost);
+
 export const PostRoutes = router;

@@ -9,6 +9,8 @@ export interface TPost {
   tags: string[];
   images: string[]; // URLs of attached images
   isPremium: boolean; // If true, only verified users can access the post
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
 }
 
 // Extend Document to include Mongoose instance methods

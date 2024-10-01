@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
@@ -55,7 +55,7 @@ const deletePost = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get all posts
+// Get all posts with optional sorting
 const getAllPosts = catchAsync(async (req: Request, res: Response) => {
   const posts = await PostServices.getAllPosts(req.query);
 
@@ -80,10 +80,52 @@ const getPostById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Upvote a post
+const upvotePost = async (req: Request, res: Response, next: NextFunction) => {
+  const { id: postId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const post = await PostServices.upvotePost(postId, userId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Post upvoted successfully',
+      data: post,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Downvote a post
+const downvotePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { id: postId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const post = await PostServices.downvotePost(postId, userId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Post downvoted successfully',
+      data: post,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const PostControllers = {
   createPost,
   editPost,
   deletePost,
   getAllPosts,
   getPostById,
+  upvotePost,
+  downvotePost,
 };

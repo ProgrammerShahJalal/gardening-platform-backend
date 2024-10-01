@@ -13,7 +13,6 @@ export interface TUser {
   followers: string[];
   following: string[];
   isVerified: boolean;
-  upvotes: number;
 }
 
 // Extend Document to include Mongoose instance methods
