@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Post } from './post.model';
-import { TPost } from './post.interface';
+import { TComment, TPost } from './post.interface';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { SortOrder } from 'mongoose';
@@ -125,6 +125,168 @@ const downvotePost = async (postId: string, userId: string) => {
   return post;
 };
 
+//add comment
+const addComment = async (
+  postId: string,
+  userId: string,
+  commentContent: string,
+) => {
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  const newComment: TComment = {
+    content: commentContent,
+    author: new mongoose.Types.ObjectId(userId),
+    replies: [],
+    createdAt: new Date(),
+  };
+
+  post.comments.push(newComment);
+
+  await post.save();
+
+  // Populate the author field (name and profilePicture) in the comments
+  const populatedPost = await Post.findById(postId).populate({
+    path: 'comments.author',
+    select: 'name profilePicture',
+  });
+
+  return populatedPost;
+};
+
+//edit comment
+const editComment = async (
+  postId: string,
+  commentId: string,
+  userId: string,
+  updatedContent: string,
+) => {
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  // Use filter or find to get the comment by its id
+  const comment = post.comments.find(
+    (comment) => comment._id.toString() === commentId,
+  );
+
+  if (!comment) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  // Check if the user is authorized to edit the comment
+  if (comment.author.toString() !== userId) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      'You are not authorized to edit this comment',
+    );
+  }
+
+  // Update the comment content
+  comment.content = updatedContent;
+
+  await post.save();
+
+  // Populate the author field in the updated comments
+  const populatedPost = await Post.findById(postId).populate({
+    path: 'comments.author',
+    select: 'name profilePicture',
+  });
+
+  return populatedPost;
+};
+
+//delete comment
+const deleteComment = async (
+  postId: string,
+  commentId: string,
+  userId: string,
+) => {
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  // Find the comment by its ID
+  const comment = post.comments.find(
+    (comment) => comment._id.toString() === commentId,
+  );
+
+  if (!comment) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  // Check if the user is authorized to delete the comment
+  if (comment.author.toString() !== userId) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      'You are not authorized to delete this comment',
+    );
+  }
+
+  // Remove the comment by filtering it out from the comments array
+  post.comments = post.comments.filter(
+    (comment) => comment._id.toString() !== commentId,
+  );
+
+  // Save the updated post
+  await post.save();
+
+  // Populate the author field in the remaining comments
+  const populatedPost = await Post.findById(postId).populate({
+    path: 'comments.author',
+    select: 'name profilePicture',
+  });
+
+  return populatedPost;
+};
+
+//add reply to comment
+const addReplyToComment = async (
+  postId: string,
+  commentId: string,
+  userId: string,
+  replyContent: string,
+) => {
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  // Find the comment by its ID
+  const comment = post.comments.find(
+    (comment) => comment._id.toString() === commentId,
+  );
+
+  if (!comment) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  const newReply = {
+    content: replyContent,
+    author: new mongoose.Types.ObjectId(userId),
+    createdAt: new Date(),
+  };
+
+  comment.replies.push(newReply);
+  await post.save();
+
+  // Populate the author field (name and profilePicture) in replies
+  const populatedPost = await Post.findById(postId).populate({
+    path: 'comments.replies.author',
+    select: 'name profilePicture',
+  });
+
+  return populatedPost;
+};
+
 export const PostServices = {
   createPost,
   updatePost,
@@ -133,4 +295,8 @@ export const PostServices = {
   getPostById,
   upvotePost,
   downvotePost,
+  addComment,
+  editComment,
+  deleteComment,
+  addReplyToComment,
 };

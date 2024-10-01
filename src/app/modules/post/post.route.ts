@@ -40,4 +40,28 @@ router.post('/upvote/:id', isAuthenticated(), PostControllers.upvotePost);
 // Downvote a post
 router.post('/downvote/:id', isAuthenticated(), PostControllers.downvotePost);
 
+// Add a comment to a post
+router.post('/:postId/comments', isAuthenticated(), PostControllers.addComment);
+
+// Edit a comment
+router.put(
+  '/:postId/comments/:commentId',
+  isAuthenticated(),
+  PostControllers.editComment,
+);
+
+// Delete a comment
+router.delete(
+  '/:postId/comments/:commentId',
+  isAuthenticated(),
+  PostControllers.deleteComment,
+);
+
+// Add a reply to a comment
+router.post(
+  '/:postId/comments/:commentId/replies',
+  isAuthenticated(),
+  PostControllers.addReplyToComment,
+);
+
 export const PostRoutes = router;

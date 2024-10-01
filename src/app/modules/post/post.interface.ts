@@ -1,6 +1,18 @@
 import { Document, Model, Types } from 'mongoose';
 import { PostCategory } from './post.constant';
 
+export interface TComment {
+  [x: string]: any;
+  content: string;
+  author: Types.ObjectId; // Reference to the User who wrote the comment
+  replies: {
+    content: string;
+    author: Types.ObjectId;
+    createdAt: Date;
+  }[];
+  createdAt: Date;
+}
+
 export interface TPost {
   title: string;
   content: string; // HTML or Markdown content from the rich text editor
@@ -11,6 +23,7 @@ export interface TPost {
   isPremium: boolean; // If true, only verified users can access the post
   upvotes: Types.ObjectId[];
   downvotes: Types.ObjectId[];
+  comments: TComment[];
 }
 
 // Extend Document to include Mongoose instance methods

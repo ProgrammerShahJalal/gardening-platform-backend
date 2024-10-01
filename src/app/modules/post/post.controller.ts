@@ -120,6 +120,103 @@ const downvotePost = async (
   }
 };
 
+//add comment
+const addComment = async (req: Request, res: Response, next: NextFunction) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const updatedPost = await PostServices.addComment(postId, userId, content);
+    res.status(httpStatus.OK).json({
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Comment added successfully',
+      data: updatedPost,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//edit comment
+const editComment = async (req: Request, res: Response, next: NextFunction) => {
+  const { postId, commentId } = req.params;
+  const { content } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const updatedPost = await PostServices.editComment(
+      postId,
+      commentId,
+      userId,
+      content,
+    );
+    res.status(httpStatus.OK).json({
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Comment edited successfully',
+      data: updatedPost,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// delete comment
+const deleteComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const updatedPost = await PostServices.deleteComment(
+      postId,
+      commentId,
+      userId,
+    );
+    res.status(httpStatus.OK).json({
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Comment deleted successfully',
+      data: updatedPost,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//add replay to comments
+const addReplyToComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { postId, commentId } = req.params;
+  const { content } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const updatedPost = await PostServices.addReplyToComment(
+      postId,
+      commentId,
+      userId,
+      content,
+    );
+    res.status(httpStatus.OK).json({
+      status: true,
+      statusCode: httpStatus.OK,
+      message: 'Reply added successfully',
+      data: updatedPost,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const PostControllers = {
   createPost,
   editPost,
@@ -128,4 +225,8 @@ export const PostControllers = {
   getPostById,
   upvotePost,
   downvotePost,
+  addComment,
+  editComment,
+  deleteComment,
+  addReplyToComment,
 };

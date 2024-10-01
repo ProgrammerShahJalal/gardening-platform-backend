@@ -1,6 +1,24 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
 import { TPost, PostModel } from './post.interface';
 import { POST_CATEGORIES } from './post.constant';
+
+// Define the schema for a comment
+const commentSchema = new Schema({
+  content: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  replies: [
+    {
+      content: { type: String, required: true },
+      author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
+  createdAt: { type: Date, default: Date.now },
+});
 
 const postSchema = new Schema<TPost, PostModel>(
   {
@@ -17,6 +35,7 @@ const postSchema = new Schema<TPost, PostModel>(
     isPremium: { type: Boolean, default: false }, // Premium content flag
     upvotes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Array of user IDs for upvotes
     downvotes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Array of user IDs for downvotes
+    comments: [commentSchema], // Array of comments
   },
   { timestamps: true },
 );
