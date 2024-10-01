@@ -8,6 +8,7 @@ export interface TProfile {
   badge?: string;
   followers: string[];
   following: string[];
+  upvotes?: number;
 }
 
 export interface TProfileDocument extends TProfile, Document {}
