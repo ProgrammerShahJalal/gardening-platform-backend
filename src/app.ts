@@ -12,7 +12,7 @@ const app: Application = express();
 app.use(
   cors({
     origin: [
-      'http://localhost:5173', // Localhost frontend
+      'http://localhost:3000', // Localhost frontend
       'https://your-frontend-domain.com', // Deployed frontend domain
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
