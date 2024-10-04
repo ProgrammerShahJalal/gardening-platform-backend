@@ -33,14 +33,14 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
 // Password recovery (through security questions)
 const recoverPassword = catchAsync(async (req: Request, res: Response) => {
-  const { email, answer1, answer2 } = req.body; // Include the answers to security questions
-  const result = await UserServices.recoverPassword(email, answer1, answer2);
+  const { email, answer1, answer2, newPass } = req.body; // Include the answers to security questions
+   await UserServices.recoverPassword(email, answer1, answer2, newPass);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Security questions verified, you can now reset the password',
-    data: result,
+    message: 'Password recovered successfully',
+    data: {},
   });
 });
 

@@ -48,6 +48,7 @@ const recoverPassword = async (
   email: string,
   answer1: string,
   answer2: string,
+  newPass: string,
 ) => {
   const user = await User.findOne({ email }).select('+securityAnswers');
   if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
@@ -69,8 +70,14 @@ const recoverPassword = async (
     );
   }
 
-  // If successful, allow password reset
-  return { message: 'Security questions verified, proceed to reset password' };
+  // Update password
+  user.password = newPass; // Assign the new password (pre-save hook will hash it)
+
+  // Save the updated user (pre('save') will handle hashing)
+  await user.save();
+
+  return user; // Return the updated user with the new password
+
 };
 
 // Password change (with old password verification)
