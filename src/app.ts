@@ -15,7 +15,7 @@ app.use(
       'http://localhost:3000', // Localhost frontend
       'https://your-frontend-domain.com', // Deployed frontend domain
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', "PATCH", 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   }),

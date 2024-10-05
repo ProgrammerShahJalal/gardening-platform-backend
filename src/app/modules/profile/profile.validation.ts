@@ -3,10 +3,9 @@ import { z } from 'zod';
 // Validation schema for updating the user profile
 export const updateProfileSchema = z.object({
   name: z.string().min(3).max(30).optional(),
-  email: z.string().email().optional(),
-  profilePicture: z.string().url().optional(),
   phone: z.string().min(10).max(15).optional(),
   address: z.string().min(5).max(100).optional(),
+  profilePicture: z.string().url().optional(),
 });
 
 // Validation middleware for updating profile

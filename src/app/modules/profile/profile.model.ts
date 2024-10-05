@@ -14,15 +14,22 @@ const ProfileSchema = new Schema<TProfileDocument>(
       unique: true,
       trim: true,
     },
+    phone: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
     profilePicture: {
       type: String,
     },
     isVerified: {
       type: Boolean,
       default: false,
-    },
-    badge: {
-      type: String,
     },
     followers: [
       {

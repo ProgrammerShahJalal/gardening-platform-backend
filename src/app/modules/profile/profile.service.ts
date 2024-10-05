@@ -24,9 +24,17 @@ const updateProfile = async (
   userId: string,
   updateData: Partial<TProfile>,
 ): Promise<TProfile | null> => {
-  const user = await User.findByIdAndUpdate(userId, updateData, {
+  const allowedFields: (keyof TProfile)[] = ['name', 'phone', 'address', 'profilePicture']; // Define allowed fields
+
+  const filteredUpdateData = Object.keys(updateData)
+    .filter((key): key is keyof TProfile => allowedFields.includes(key as keyof TProfile)) // Type guard to ensure key is a valid TProfile key
+    .reduce((obj, key) => {
+      return { ...obj, [key]: updateData[key] }; // Spread to accumulate filtered keys and values
+    }, {} as Partial<TProfile>); // Explicitly cast as Partial<TProfile>
+
+  const user = await User.findByIdAndUpdate(userId, filteredUpdateData, {
     new: true,
-    runValidators: true, // Ensure validators are run when updating
+    runValidators: true,
   });
 
   if (!user) {
@@ -35,6 +43,8 @@ const updateProfile = async (
 
   return user;
 };
+
+
 
 // Follow or Unfollow a user
 const followUser = async (

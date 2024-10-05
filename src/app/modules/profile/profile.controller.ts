@@ -20,7 +20,8 @@ const getProfile = catchAsync(async (req: Request, res: Response) => {
 // Update Profile
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
-  const updateData = req.body; // Includes profile picture, bio, etc.
+  const updateData = req.body; 
+
   const updatedUser = await ProfileServices.updateProfile(userId, updateData);
 
   sendResponse(res, {
