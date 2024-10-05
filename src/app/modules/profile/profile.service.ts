@@ -7,7 +7,7 @@ import { TProfile } from './profile.interface';
 const getProfile = async (userId: string): Promise<TProfile | null> => {
   const user = await User.findById(userId)
     .select(
-      'name email role profilePicture followers following isVerified upvotes',
+      'name email address phone role profilePicture followers following isVerified upvotes',
     )
     .populate('followers', 'name profilePicture')
     .populate('following', 'name profilePicture');
