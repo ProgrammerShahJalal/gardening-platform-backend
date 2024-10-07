@@ -55,15 +55,28 @@ const deletePost = async (postId: string, authorId: string) => {
 
 // Get all posts with optional filtering and sorting
 const getAllPosts = async (query: any) => {
-  const filter = query.category ? { category: query.category } : {};
+  const filter: any = {};
+
+  // Apply category filter if provided
+  if (query.category) {
+    filter.category = query.category;
+  }
+
+  // Apply author filter (for "my posts") if provided
+  if (query.author) {
+    filter.author = query.author;
+  }
 
   // Sorting based on upvotes
-  const sortCriteria: Record<string, SortOrder> =
+  const sortCriteria: Record<string, SortOrder> = 
     query.sortBy === 'upvotes' ? { upvotes: -1 } : {};
 
-  const posts = await Post.find(filter).sort(sortCriteria);
+  // Fetch the posts from the database with filters and sorting
+  const posts = await Post.find(filter).sort(sortCriteria).populate('author', 'name email profilePicture');
+
   return posts;
 };
+
 
 // Get a single post by ID
 const getPostById = async (postId: string) => {
