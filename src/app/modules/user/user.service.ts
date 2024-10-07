@@ -31,7 +31,6 @@ const loginUser = async (email: string, password: string) => {
   if (!user || !(await User.isPasswordMatched(password, user.password))) {
     throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid email or password');
   }
-
   const token = jwt.sign(
     { id: user._id, role: user.role },
     config.jwt_access_secret as string,
@@ -77,7 +76,6 @@ const recoverPassword = async (
   await user.save();
 
   return user; // Return the updated user with the new password
-
 };
 
 // Password change (with old password verification)

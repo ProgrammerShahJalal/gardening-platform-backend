@@ -64,18 +64,11 @@ router.post(
   PostControllers.addReplyToComment,
 );
 
-// Add a post to favourites
+// Toggle a post in favourites (add/remove)
 router.post(
   '/favourites/:postId',
   isAuthenticated(),
-  PostControllers.addFavouritePost,
-);
-
-// Remove a post from favourites
-router.delete(
-  '/favourites/:postId',
-  isAuthenticated(),
-  PostControllers.removeFavouritePost,
+  PostControllers.toggleFavouritePost,
 );
 
 // Get all favourite posts for the logged-in user

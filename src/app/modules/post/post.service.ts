@@ -68,15 +68,16 @@ const getAllPosts = async (query: any) => {
   }
 
   // Sorting based on upvotes
-  const sortCriteria: Record<string, SortOrder> = 
+  const sortCriteria: Record<string, SortOrder> =
     query.sortBy === 'upvotes' ? { upvotes: -1 } : {};
 
   // Fetch the posts from the database with filters and sorting
-  const posts = await Post.find(filter).sort(sortCriteria).populate('author', 'name email profilePicture');
+  const posts = await Post.find(filter)
+    .sort(sortCriteria)
+    .populate('author', 'name email profilePicture');
 
   return posts;
 };
-
 
 // Get a single post by ID
 const getPostById = async (postId: string) => {
@@ -301,44 +302,37 @@ const addReplyToComment = async (
   return populatedPost;
 };
 
-// Add a post to favourites
-const addFavouritePost = async (userId: string, postId: string) => {
+// Toggle post in favourites (add or remove)
+const toggleFavouritePost = async (userId: string, postId: string) => {
   const user = await User.findById(userId);
   const post = await Post.findById(postId);
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
 
   if (!post) {
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  if (user?.favourites.includes(postId)) {
-    throw new AppError(httpStatus.CONFLICT, 'Post already in favourites');
+  const isFavourite = user.favourites.includes(postId);
+
+  if (isFavourite) {
+    // Remove from favourites
+    user.favourites = user.favourites.filter(
+      (favPostId) => favPostId.toString() !== postId,
+    );
+  } else {
+    // Add to favourites
+    user.favourites.push(postId);
   }
 
-  user?.favourites.push(postId);
-  await user?.save();
-
-  return post;
-};
-
-// Remove a post from favourites
-const removeFavouritePost = async (userId: string, postId: string) => {
-  const user = await User.findById(userId);
-  const post = await Post.findById(postId);
-
-  if (!post) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
-  }
-
-  if (!user?.favourites.includes(postId)) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Post not in favourites');
-  }
-
-  user.favourites = user.favourites.filter(
-    (favPostId) => favPostId.toString() !== postId,
-  );
   await user.save();
 
-  return post;
+  return {
+    isFavourite: !isFavourite, // Return the updated state (whether it's now a favourite or not)
+    postData: post, // Return the post data
+  };
 };
 
 // get favourites posts
@@ -381,7 +375,6 @@ export const PostServices = {
   editComment,
   deleteComment,
   addReplyToComment,
-  addFavouritePost,
-  removeFavouritePost,
+  toggleFavouritePost,
   getFavouritePosts,
 };

@@ -7,10 +7,10 @@ import { TProfile } from './profile.interface';
 const getProfile = async (userId: string): Promise<TProfile | null> => {
   const user = await User.findById(userId)
     .select(
-      'name email address phone role profilePicture followers following isVerified upvotes',
+      'name email address phone role profilePicture followers following isVerified upvotes downvotes favourites',
     )
-    .populate('followers', 'name profilePicture')
-    .populate('following', 'name profilePicture');
+    .populate('followers', 'name profilePicture email')
+    .populate('following', 'name profilePicture email');
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
@@ -24,10 +24,17 @@ const updateProfile = async (
   userId: string,
   updateData: Partial<TProfile>,
 ): Promise<TProfile | null> => {
-  const allowedFields: (keyof TProfile)[] = ['name', 'phone', 'address', 'profilePicture']; // Define allowed fields
+  const allowedFields: (keyof TProfile)[] = [
+    'name',
+    'phone',
+    'address',
+    'profilePicture',
+  ]; // Define allowed fields
 
   const filteredUpdateData = Object.keys(updateData)
-    .filter((key): key is keyof TProfile => allowedFields.includes(key as keyof TProfile)) // Type guard to ensure key is a valid TProfile key
+    .filter((key): key is keyof TProfile =>
+      allowedFields.includes(key as keyof TProfile),
+    ) // Type guard to ensure key is a valid TProfile key
     .reduce((obj, key) => {
       return { ...obj, [key]: updateData[key] }; // Spread to accumulate filtered keys and values
     }, {} as Partial<TProfile>); // Explicitly cast as Partial<TProfile>
@@ -43,8 +50,6 @@ const updateProfile = async (
 
   return user;
 };
-
-
 
 // Follow or Unfollow a user
 const followUser = async (

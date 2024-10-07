@@ -85,7 +85,8 @@ const getPostById = catchAsync(async (req: Request, res: Response) => {
 const upvotePost = async (req: Request, res: Response, next: NextFunction) => {
   const { id: postId } = req.params;
   const userId = req.user.id;
-
+  console.log('userId', userId);
+  console.log('postId', postId);
   try {
     const post = await PostServices.upvotePost(postId, userId);
     res.status(httpStatus.OK).json({
@@ -218,44 +219,26 @@ const addReplyToComment = async (
   }
 };
 
-// Add post to favourites
-const addFavouritePost = async (
+// Toggle post in favourites (add or remove)
+const toggleFavouritePost = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const post = await PostServices.addFavouritePost(
+    const post = await PostServices.toggleFavouritePost(
       req.user.id,
       req.params.postId,
     );
-    res.status(httpStatus.OK).json({
-      status: true,
-      statusCode: httpStatus.OK,
-      message: 'Post added to favourites successfully',
-      data: post,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    const message = post.isFavourite
+      ? 'Post added to favourites successfully'
+      : 'Post removed from favourites successfully';
 
-// Remove post from favourites
-const removeFavouritePost = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const post = await PostServices.removeFavouritePost(
-      req.user.id,
-      req.params.postId,
-    );
     res.status(httpStatus.OK).json({
       status: true,
       statusCode: httpStatus.OK,
-      message: 'Post removed from favourites successfully',
-      data: post,
+      message,
+      data: post.postData, // Return the post data
     });
   } catch (error) {
     next(error);
@@ -295,7 +278,6 @@ export const PostControllers = {
   editComment,
   deleteComment,
   addReplyToComment,
-  addFavouritePost,
-  removeFavouritePost,
+  toggleFavouritePost,
   getFavouritePosts,
 };

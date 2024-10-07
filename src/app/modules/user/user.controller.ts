@@ -21,7 +21,6 @@ const signUp = catchAsync(async (req: Request, res: Response) => {
 const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const result = await UserServices.loginUser(email, password);
-
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -34,7 +33,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 // Password recovery (through security questions)
 const recoverPassword = catchAsync(async (req: Request, res: Response) => {
   const { email, answer1, answer2, newPass } = req.body; // Include the answers to security questions
-   await UserServices.recoverPassword(email, answer1, answer2, newPass);
+  await UserServices.recoverPassword(email, answer1, answer2, newPass);
 
   sendResponse(res, {
     success: true,
